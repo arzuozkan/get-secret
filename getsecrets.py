@@ -2,8 +2,11 @@ import argparse
 import re
 import subprocess
 import json
+from zenrows import ZenRowsClient
 #import spacy
-#import requests
+import requests
+import os
+from dotenv import load_dotenv
 
 def is_json(data):
     try:
@@ -70,6 +73,7 @@ def main():
         extras=False
 
     if args.localFile:
+        print("Reading web content...")
         file_name=args.localFile
         try:
             with open(file_name,"r") as f:
@@ -81,26 +85,46 @@ def main():
     if args.remoteFile:
         print("Fetching the web content...")
         remote_site=args.remoteFile
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Upgrade-Insecure-Requests": "1"
+        }
+
+        response = requests.get(remote_site, headers=headers)
+        print("response code: ",response.status_code)
+        print(response.text)
+        web_content=response.text
+
         #basic curl command
-        curl_command=["curl","-k",remote_site]
+        # curl_command=["curl","-k",remote_site]
 
-        response=subprocess.run(curl_command,capture_output=True,text=True)
+        # response=subprocess.run(curl_command,capture_output=True,text=True)
 
-        if "Just a moment..." in response.stdout:
-            print("Required bypass WAF")
-            curl_bypass= ['curl','-k',remote_site,
-                          '-H','"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"',
-                          '-H','"Accept-Encoding: gzip, deflate"',
-                          '-H','"Accept-Language: en-US,en;q=0.9"',
-                          '-H','"Upgrade-Insecure-Requests": "1"',
-                          '-H','"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"',
-                          '-H',''
-                          ]
+        # if "Just a moment..." or "Checking if the site connection is secure" in response.text:
+        #     print("Required bypass WAF")
+            # curl_bypass= ['curl','-k',remote_site,
+            #               '-H','"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"',
+            #               '-H','"Accept-Encoding: gzip, deflate"',
+            #               '-H','"Accept-Language: en-US,en;q=0.9"',
+            #               '-H','"Upgrade-Insecure-Requests": "1"',
+            #               '-H','"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"',
+            #               ]
 
-            return
-        else:
-            print("Exit Code:","OK" if not response.returncode else "NOT OK")
-            web_content=response.stdout
+            #response=subprocess.run(curl_bypass,capture_output=True,text=True)
+            
+            #ZenRows ürünü ile web crawl 
+            #load_dotenv()
+
+            #client_token = os.environ.get("CLIENT_TOKEN")
+            # client = ZenRowsClient(client_token)
+            # response = client.get(remote_site)
+            # web_content=response.text
+        #else:
+            #print("Exit Code:","OK" if not response.returncode else "NOT OK")
+        
         
     if args.string:
         print("Searching inside the given string..")
@@ -127,6 +151,7 @@ def main():
 
 
 if __name__=="__main__":
+    
     # response = requests.get(url)
 
     # print("Status Code:", response.status_code)
