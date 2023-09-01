@@ -93,9 +93,9 @@ def main():
             "Upgrade-Insecure-Requests": "1"
         }
 
-        response = requests.get(remote_site, headers=headers)
+        response = requests.get(remote_site, headers=headers,verify=False)
         print("response code: ",response.status_code)
-        print(response.text)
+        #print(response.text)
         web_content=response.text
 
         #basic curl command
