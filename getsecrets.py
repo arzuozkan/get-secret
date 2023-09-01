@@ -7,6 +7,8 @@ from zenrows import ZenRowsClient
 import requests
 import os
 from dotenv import load_dotenv
+from urllib3.exceptions import InsecureRequestWarning
+from urllib3 import disable_warnings
 
 def is_json(data):
     try:
@@ -19,7 +21,7 @@ def print_matches(matches):
     if matches:
         for match in matches:
             print(match.group().strip())
-        print("********************************")
+        print("\n\n")
     else:
         print("Seems nothin there.")
 
@@ -69,7 +71,6 @@ def main():
     extras=True
 
     if args.noextra:
-        print(args.noextra)
         extras=False
 
     if args.localFile:
@@ -92,11 +93,20 @@ def main():
             "Accept-Language": "en-US,en;q=0.9",
             "Upgrade-Insecure-Requests": "1"
         }
+        disable_warnings(InsecureRequestWarning)
 
         response = requests.get(remote_site, headers=headers,verify=False)
-        print("response code: ",response.status_code)
+        #print("response code: ",response.status_code)
         #print(response.text)
         web_content=response.text
+
+        #ZenRows ürünü ile web crawl da yapılabiliyor
+        #load_dotenv()
+
+        #client_token = os.environ.get("CLIENT_TOKEN")
+        # client = ZenRowsClient(client_token)
+        # response = client.get(remote_site)
+        # web_content=response.text
 
         #basic curl command
         # curl_command=["curl","-k",remote_site]
@@ -115,13 +125,7 @@ def main():
 
             #response=subprocess.run(curl_bypass,capture_output=True,text=True)
             
-            #ZenRows ürünü ile web crawl 
-            #load_dotenv()
-
-            #client_token = os.environ.get("CLIENT_TOKEN")
-            # client = ZenRowsClient(client_token)
-            # response = client.get(remote_site)
-            # web_content=response.text
+            
         #else:
             #print("Exit Code:","OK" if not response.returncode else "NOT OK")
         
@@ -151,23 +155,6 @@ def main():
 
 
 if __name__=="__main__":
-    
-    # response = requests.get(url)
-
-    # print("Status Code:", response.status_code)
-    # print("Response Content:", response.text)
-        
-    #web_content=response.stdout
-
-    # web_content = """
-    # <meta name="description" content="WSTG - Stable on the main website for The OWASP Foundation. OWASP is a nonprofit foundation that works to improve the security of software.">
-    # <!-- Use the DB administrator password for testing:  f@keP@a$$w0rD -->
-    # <script type="application/json">
-    # {"GOOGLE_MAP_API_KEY":"AIzaSyDUEBnKgwiqMNpDplT6ozE4Z0XxuAbqDi4", 
-    # "RECAPTCHA_KEY":"6LcPscEUiAAAAHOwwM3fGvIx9rsPYUq62uRhGjJ0"}
-    # </script>
-    # """
-
     main()
 
 
